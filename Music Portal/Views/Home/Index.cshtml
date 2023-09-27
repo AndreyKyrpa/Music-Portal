@@ -1,0 +1,32 @@
+﻿@model IEnumerable<Music_Portal.Models.Song>
+@{
+    ViewData["Title"] = "Home page";
+}
+
+@foreach (var item in Model) {
+    <div style="display: flex; flex-direction: row; border-radius: 20px;  background-color:darkgray; padding:20px; margin:30px; width: 900px">
+        <div style="text-align: center;">
+            <div style="margin: 0 auto; background-color: black;border-radius: 10px;padding: 20px;display: inline-block;width: auto;">
+                <video id="videoPlayer" width="640" height="360" controls>
+                    <source src="@Html.DisplayFor(modelItem => item.Clip)" type="video/mp4" />
+                </video>
+            </div>
+        </div>
+        <div style="text-align: center;">
+            <div style="display: flex; flex-direction: column; margin-left:10px; width:170px">
+                <p style="color:#ffffff; font-family:Arial; font-size:larger">Name: @Html.DisplayFor(modelItem => item.Name)</p>
+                <p style="color:#ffffff; font-family:Arial; font-size:larger">Year: @Html.DisplayFor(modelItem => item.Year)</p>
+                <p style="color:#ffffff; font-family:Arial; font-size:larger">Style: @Html.DisplayFor(modelItem => item.Style.Name)</p>
+                @if (Context.Session.GetString("Login") == "1")
+                {
+                    <p>
+                        <a asp-action="EditSong" asp-controller="Admin" asp-route-id="@item.Id">Edit</a> |
+                        <a asp-action="DeleteSong" asp-controller="Admin" asp-route-id="@item.Id">Delete</a>
+                    </p>
+                }
+            </div>
+        </div>
+        
+        
+    </div>
+}

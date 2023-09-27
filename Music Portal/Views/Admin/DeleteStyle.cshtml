@@ -1,0 +1,31 @@
+﻿@model Music_Portal.Models.Style
+
+@{
+    ViewData["Title"] = "Delete";
+}
+<div style="text-align: center;">
+    <div style="margin: 0 auto; background-color: darkgray;border-radius: 10px;padding: 20px;display: inline-block;width: auto;">
+        <h1>Delete</h1>
+
+        <h3>Are you sure you want to delete this?</h3>
+        <div>
+            <h4>Style</h4>
+
+            <dl class="row">
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.Name)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.Name)
+                </dd>
+            </dl>
+
+            <form asp-action="DeleteStyle">
+                <input type="hidden" asp-for="Id" />
+                <input type="submit" value="Delete" class="btn btn-danger" /> |
+                <a asp-action="DetailsStyle">Back to List</a>
+            </form>
+        </div>
+    </div>
+</div>
+

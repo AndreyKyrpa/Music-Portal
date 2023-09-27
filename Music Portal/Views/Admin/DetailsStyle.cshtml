@@ -1,0 +1,38 @@
+﻿@model IEnumerable<Music_Portal.Models.Style>
+
+@{
+    ViewData["Title"] = "DetailsStyle";
+}
+<div style="text-align: center;">
+    <div style="margin: 0 auto; background-color: darkgray;border-radius: 10px;padding: 20px;display: inline-block;width: auto;">
+        <h1>List Style</h1>
+
+        <p>
+            <a asp-action="CreateStyle">Create Style</a>
+        </p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Name)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Name)
+                        </td>
+                        <td>
+                            <a asp-action="DeleteStyle" asp-route-id="@item.Id">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+
+    </div>
+</div>
