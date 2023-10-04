@@ -9,29 +9,30 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Music_Portal.Models;
+using Music_Portal.Repository;
 
 namespace Music_Portal.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly MusicPortalContext _context;
+        IRepository repo;
         IWebHostEnvironment _appEnvironment;
 
-        public HomeController(MusicPortalContext context, IWebHostEnvironment appEnvironment)
+        public HomeController(IRepository r, IWebHostEnvironment appEnvironment)
         {
-            _context = context;
+            repo = r;
             _appEnvironment = appEnvironment;
         }
 
         public async Task<IActionResult> Index()
         {
-            var musicportalContext = _context.Songs;
-            return View(await musicportalContext.ToListAsync());
+            var musicportalContext = await repo.GetSongList();
+            return View(musicportalContext);
         }
 
         public IActionResult CreateSong()
         {
-            ViewData["Style_id"] = new SelectList(_context.Styles, "Id", "Name");
+            ViewData["Style_id"] = new SelectList(repo.GetStyles(), "Id", "Name");
             return View();
         }
 
@@ -51,8 +52,8 @@ namespace Music_Portal.Controllers
                     }
                     song.Clip = path;
                 }
-                _context.Add(song);
-                await _context.SaveChangesAsync();
+                repo.CreateSong(song);
+                await repo.Save();
                 return RedirectToAction(nameof(Index));
             }
             return View(song);
@@ -63,17 +64,17 @@ namespace Music_Portal.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Login(LoginModel logon)
+        public async Task<IActionResult> Login(LoginModel logon)
         {
             if (ModelState.IsValid)
             {
-                if (_context.Users.ToList().Count == 0)
+                if (await repo.GetUserList() == null)
                 {
                     ModelState.AddModelError("", "Wrong login or password!");
                     return View(logon);
                 }
-                var users = _context.Users.Where(a => a.Login == logon.Login);
-                if (users.ToList().Count == 0)
+                var users = repo.GetUsers();
+                if (users == null)
                 {
                     ModelState.AddModelError("", "Wrong login or password!");
                     return View(logon);
@@ -97,7 +98,7 @@ namespace Music_Portal.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Registration(RegisterModel reg)
+        public async Task<IActionResult> Registration(RegisterModel reg)
         {
             if (ModelState.IsValid)
             {
@@ -108,8 +109,8 @@ namespace Music_Portal.Controllers
                 user.Email = reg.Email;
                 user.Password = reg.Password;
                 user.Access_Level = -1;
-                _context.Add(user);
-                _context.SaveChanges();
+                repo.CreateUser(user);
+                await repo.Save();
                 return RedirectToAction("Login", "Home");
             }
 

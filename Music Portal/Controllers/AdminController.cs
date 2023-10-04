@@ -6,29 +6,29 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Music_Portal.Models;
+using Music_Portal.Repository;
 
 namespace Music_Portal.Controllers
 {
     public class AdminController : Controller
     {
-        private readonly MusicPortalContext _context;
+        IRepository repo;
         IWebHostEnvironment _appEnvironment;
-        public AdminController(MusicPortalContext context, IWebHostEnvironment appEnvironment)
+
+        public AdminController(IRepository r, IWebHostEnvironment appEnvironment)
         {
+            repo = r;
             _appEnvironment = appEnvironment;
-            _context = context;
         }
         public async Task<IActionResult> DetailsStyle()
         {
-            return _context.Styles != null ?
-                        View(await _context.Styles.ToListAsync()) :
-                        Problem("Entity set 'MusicPortalContext.Styles'  is null.");
+            var styles = repo.GetStyleList();
+            return View(styles);
         }
         public async Task<IActionResult> DetailsUser()
         {
-            return _context.Users != null ?
-                        View(await _context.Users.ToListAsync()) :
-                        Problem("Entity set 'MusicPortalContext.Users'  is null.");
+            var styles = repo.GetUserList();
+            return View(styles);
         }
         public IActionResult CreateStyle()
         {
@@ -41,26 +41,26 @@ namespace Music_Portal.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(style);
-                await _context.SaveChangesAsync();
+                repo.CreateStyle(style);
+                await repo.Save();
                 return RedirectToAction("DetailsStyle", "Admin");
             }
             return View(style);
         }
 
-        public async Task<IActionResult> EditSong(int? id)
+        public async Task<IActionResult> EditSong(int id)
         {
-            if (id == null || _context.Songs == null)
+            if (id == null || repo.GetSongList == null)
             {
                 return NotFound();
             }
 
-            var song = await _context.Songs.FindAsync(id);
+            var song = await repo.GetSong(id);
             if (song == null)
             {
                 return NotFound();
             }
-            ViewData["Style_id"] = new SelectList(_context.Styles, "Id", "Name", song.Style_id);
+            ViewData["Style_id"] = new SelectList(repo.GetAllSongs(), "Id", "Name", song.Style_id);
             return View(song);
         }
 
@@ -84,12 +84,12 @@ namespace Music_Portal.Controllers
                         await uploadedFile.CopyToAsync(fileStream);
                     }
                     song.Clip = path;
-                    _context.Update(song);
-                    await _context.SaveChangesAsync();
+                    repo.UpdateSong(song);
+                    await repo.Save();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!SongExists(song.Id))
+                    if (!repo.SongExists(song.Id))
                     {
                         return NotFound();
                     }
@@ -102,14 +102,14 @@ namespace Music_Portal.Controllers
             }
             return View(song);
         }
-        public async Task<IActionResult> EditUser(int? id)
+        public async Task<IActionResult> EditUser(int id)
         {
-            if (id == null || _context.Users == null)
+            if (id == null || repo.GetUserList == null)
             {
                 return NotFound();
             }
 
-            var user = await _context.Users.FindAsync(id);
+            var user = await repo.GetUser(id);
             if (user == null)
             {
                 return NotFound();
@@ -131,12 +131,12 @@ namespace Music_Portal.Controllers
             {
                 try
                 {
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
+                    repo.UpdateUser(user);
+                    await repo.Save();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!UserExists(user.Id))
+                    if (!repo.UserExists(user.Id))
                     {
                         return NotFound();
                     }
@@ -150,15 +150,14 @@ namespace Music_Portal.Controllers
             return View(user);
         }
 
-        public async Task<IActionResult> DeleteStyle(int? id)
+        public async Task<IActionResult> DeleteStyle(int id)
         {
-            if (id == null || _context.Styles == null)
+            if (id == null || repo.GetSongList == null)
             {
                 return NotFound();
             }
 
-            var style = await _context.Styles
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var style = await repo.GetStyle(id);
             if (style == null)
             {
                 return NotFound();
@@ -171,29 +170,28 @@ namespace Music_Portal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmedStyle(int id)
         {
-            if (_context.Styles == null)
+            if (repo.GetStyleList == null)
             {
                 return Problem("Entity set 'MusicPortalContext.Styles'  is null.");
             }
-            var style = await _context.Styles.FindAsync(id);
+            var style = await repo.GetStyle(id);
             if (style != null)
             {
-                _context.Styles.Remove(style);
+                repo.DeleteStyle(style.Id);
             }
 
-            await _context.SaveChangesAsync();
+            await repo.Save();
             return RedirectToAction("DetailsStyle", "Admin");
         }
 
-        public async Task<IActionResult> DeleteUser(int? id)
+        public async Task<IActionResult> DeleteUser(int id)
         {
-            if (id == null || _context.Users == null)
+            if (id == null || repo.GetUserList == null)
             {
                 return NotFound();
             }
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var user = await repo.GetUser(id);
             if (user == null)
             {
                 return NotFound();
@@ -206,29 +204,27 @@ namespace Music_Portal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmedUser(int id)
         {
-            if (_context.Users == null)
+            if (repo.GetUserList == null)
             {
                 return Problem("Entity set 'MusicPortalContext.Users'  is null.");
             }
-            var user = await _context.Users.FindAsync(id);
+            var user = await repo.GetUser(id);
             if (user != null)
             {
-                _context.Users.Remove(user);
+                repo.DeleteUser(user.Id);
             }
 
-            await _context.SaveChangesAsync();
+            await repo.Save();
             return RedirectToAction("DetailsUser", "Admin");
         }
 
-        public async Task<IActionResult> DeleteSong(int? id)
+        public async Task<IActionResult> DeleteSong(int id)
         {
-            if (id == null || _context.Songs == null)
+            if (id == null || repo.GetSongList == null)
             {
                 return NotFound();
             }
-            var song = await _context.Songs
-                .Include(p => p.Style)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var song = await repo.GetSong(id);
             if (song == null)
             {
                 return NotFound();
@@ -241,30 +237,20 @@ namespace Music_Portal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmedSong(int id)
         {
-            if (_context.Songs == null)
+            if (repo.GetSongList == null)
             {
                 return Problem("Entity set 'MusicPortalContext.Songs'  is null.");
             }
-            var song = await _context.Songs.FindAsync(id);
+            var song = await repo.GetSong(id);
             if (song != null)
             {
-                _context.Songs.Remove(song);
+                repo.DeleteSong(song.Id);
             }
 
-            await _context.SaveChangesAsync();
+            await repo.Save();
             return RedirectToAction("Index", "Home");
         }
-        private bool StyleExists(int id)
-        {
-            return (_context.Styles?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
-        private bool UserExists(int id)
-        {
-            return (_context.Users?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
-        private bool SongExists(int id)
-        {
-            return (_context.Songs?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
+        
+        
     }
 }
