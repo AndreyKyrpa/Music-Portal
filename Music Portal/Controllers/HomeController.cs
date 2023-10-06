@@ -73,7 +73,7 @@ namespace Music_Portal.Controllers
                     ModelState.AddModelError("", "Wrong login or password!");
                     return View(logon);
                 }
-                var users = repo.GetUsers();
+                var users = repo.GetUsersLogin(logon);
                 if (users == null)
                 {
                     ModelState.AddModelError("", "Wrong login or password!");

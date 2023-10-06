@@ -12,6 +12,7 @@ namespace Music_Portal.Repository
         Task<List<User>> GetUserList();
         Task<User> GetUser(int id);
         public IEnumerable<User> GetUsers();
+        public IEnumerable<User> GetUsersLogin(LoginModel logon);
         Task CreateUser(User item);
         void UpdateUser(User item);
         Task DeleteUser(int id);

@@ -22,12 +22,12 @@ namespace Music_Portal.Controllers
         }
         public async Task<IActionResult> DetailsStyle()
         {
-            var styles = repo.GetStyleList();
+            var styles = repo.GetStyles();
             return View(styles);
         }
         public async Task<IActionResult> DetailsUser()
         {
-            var styles = repo.GetUserList();
+            var styles = repo.GetUsers();
             return View(styles);
         }
         public IActionResult CreateStyle()

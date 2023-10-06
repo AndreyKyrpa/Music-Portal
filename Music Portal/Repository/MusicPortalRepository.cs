@@ -23,6 +23,10 @@ namespace Music_Portal.Repository
         {
             return await _context.Users.ToListAsync();
         }
+        public IEnumerable<User> GetUsersLogin(LoginModel logon)
+        {
+            return _context.Users.Where(a => a.Login == logon.Login);
+        }
         public async Task<User> GetUser(int id)
         {
             return await _context.Users.FindAsync(id);
